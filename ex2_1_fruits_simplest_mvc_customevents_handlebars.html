@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>MVC med Handlebars</title>
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+</head>
+<body><h1>Data från modellen:</h1>
+  <button id="loadDataBtn">Hämta data</button>
+
+  <!-- Här renderas listan -->
+  <ul id="dataList"></ul>
+
+  <!-- Handlebars-template -->
+  <script id="list-template" type="text/x-handlebars-template">
+    {{#each items}}
+      <li>{{this}}</li>
+    {{/each}}
+  </script>
+
+  <script>
+    // === MODELL ===
+    const Model = {
+      data: ["Äpple", "Banan", "Citron"],
+      getData: function () {
+        return this.data;
+      }
+    };
+
+    // === VY ===
+    const View = {
+      init() {
+        this.button = document.getElementById("loadDataBtn");
+        //where to put the handlerbars template
+        this.list = document.getElementById("dataList");
+        ///get the template that contatins html and handlebars  {{ }} 
+        this.templateSource = document.getElementById("list-template").innerHTML;
+        //compile it to a function
+        this.template = Handlebars.compile(this.templateSource);
+
+        this.button.addEventListener("click", () => {
+          //create customevent
+          const event = new CustomEvent("fruitDataLoaded");
+          //dispatch the event so some one can listen for it.
+          document.dispatchEvent(event);
+        });
+      },
+      render: function (items) {
+        //use template function to send data to the template for rendering using its the html and handlebars structure
+        const html = this.template({ items });
+        //fill the list with handlebar template html and data
+        this.list.innerHTML = html;
+      }
+    };
+
+    // === KONTROLLER ===
+    const Controller = {
+      init() {        
+        //listen to the event and act on it
+        //get data from model, send it to view for rendering
+        document.addEventListener("fruitDataLoaded", () => {
+          const data = Model.getData();
+          View.render(data);
+        });
+      }
+    };
+
+    
+    // === STARTA APPEN ===
+    
+const App={
+  main(){
+    View.init();
+    Controller.init();
+  }
+}
+App.main();
+
+  </script>
+</body>
+</html>

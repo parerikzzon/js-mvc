@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Slumpa namn spagetti kod</title>
+</head>
+
+<body>
+    <h1>Slumpa namn spagetti kod</h1>
+    <button id="btnShowName">Visa slumpat namn</button>
+    <div id="result"></div>
+
+    <script>
+        // Detta är sk spagettikod
+
+        var n = ["Pär", "Alexander", "Ullis", "Hans"];
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("btnShowName").addEventListener("click", function () {
+                var x = Math.floor(Math.random() * n.length);
+                var y = n[x];
+                document.getElementById("result").innerHTML = y;
+            });
+        });        
+        
+        
+        
+        //Dåliga variabelnamn (n, x, y) som inte säger vad de gör.
+        /*All logik är inbäddad i en enda anonym funktion.
+        Ingen uppdelning i återanvändbara funktioner.
+        Ingen dokumentation eller kommentarer som förklarar syftet.
+        Svårt att felsöka eller bygga vidare på.
+        */
+        //första försök att dela upp den i funktioner, bätter variabelnamn
+        /*
+        const names = ["Pär", "Alexander", "Ullis", "Hans"];
+
+        // Funktion för att hämta ett slumpmässigt namn
+        function getRandomName() {
+            return names[Math.floor(Math.random() * names.length)];
+        }
+
+        // Funktion för att visa namnet i DOM:en
+        function showName() {
+            const name = getRandomName();
+            document.getElementById("result").innerText = name;
+        }
+
+        // När sidan laddats, koppla klickhändelse till knappen
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("btnShowName").addEventListener("click", showName);
+        });
+        */
+    </script>
+</body>
+
+</html>

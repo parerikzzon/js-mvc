@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MVC med Custom Events</title>
+</head>
+
+<body>
+    <h1>Steg 3 MVC med CustomEvents</h1>
+    <button id="btnShowName">Visa slumpat namn</button>
+    <div id="result"></div>
+
+    <script>
+        // ===============================
+        // MODEL
+        // ===============================
+        const Model = {
+            names: ["Pär", "Alexander", "Ullis", "Hans"],
+
+            getRandomName() {
+                return this.names[Math.floor(Math.random() * this.names.length)];
+            }
+           
+        };
+
+        // ===============================
+        // VIEW
+        // vet inget om controllern eller modellen
+        // ===============================
+        const View = {
+
+            render(name) {
+                document.getElementById("result").innerText = name;
+            },
+
+            init() {
+                //skapar klickhändels för knappen
+                document.getElementById("btnShowName").addEventListener("click", () => {
+                    // skapar och skickar ett customevent "nameShowed" som någon, i vårt fall, 
+                    // kontrollern lyssnar på och gör nått lämpligt med. tex hämtar data slumpat namn från modellen
+                    //  och skickar(dispatchEvent) det namnet till vyn som render det                    
+                    document.dispatchEvent(new CustomEvent("nameShowed"));
+                });
+            }
+        };
+
+        // ===============================
+        // CONTROLLER
+        // känner till vyn och modellen
+        // ===============================
+        const Controller = {
+            init() {
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                //lyssnar på det av vyn skapade customevent, nameShowed
+                //och hanterar det på lämpligt sätt genom att:
+                document.addEventListener("nameShowed", () => {
+                    //hämta slumpat namn från modellen
+                    const name = Model.getRandomName();
+                    //Skickar det namnet till vyn som kan render det.
+                    View.render(name);
+                });
+            }
+        };
+
+        // ===============================
+        // STARTA APPEN
+        // ===============================
+
+        // === STARTA APPEN ===
+
+        const App = {
+            main() {
+                View.init();
+                Controller.init();
+            }
+        }
+        App.main();
+    </script>
+</body>
+
+</html>
+<!--
+Vad har vi uppnått i detta steg?
+Förbättring	                                Effekt
+Lös koppling mellan View och Controller	    View vet inte längre vad som händer när knappen klickas – den bara skickar ett event.
+Controller lyssnar på event	                Controller tar ansvar för logiken och bestämmer vad som ska hända.
+Bättre testbarhet och flexibilitet	        Du kan byta ut View eller Controller utan att påverka den andra direkt.
+-->

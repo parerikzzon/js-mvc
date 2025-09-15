@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MVC med Custom Events Handlebars</title>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+</head>
+
+<body>
+    <h1>Steg 4 MVC, customevent och handlebars.sj {{}}</h1>
+    <button id="btnShowName">Visa slumpde namn</button>
+    <div id="divResult">
+        <!--här kommer handlebartemplate att hamna med i fyllt data-->
+    </div>
+    <!-- Handlebars-template den kommer sen att fyllas med data och läggas i divResult-->
+    <script id="h3-template" type="text/x-handlebars-template">
+            <h3>{{name}}</h3>    
+    </script>
+
+    <script>
+        //nästa steg 4 för att förbättra View-lagret genom att använda mallar (templates) för att rendera HTML.
+        /*Varför använda Handlebars.js i View?
+            Problem vi löser:
+            Just nu skriver vi direkt till DOM med innerText eller innerHTML.
+            Om vi vill visa mer komplex HTML (t.ex. listor, tabeller, kort), blir det snabbt rörigt.
+            Vi blandar ofta HTML och JavaScript, vilket gör koden svår att läsa och underhålla.
+        */ 
+        // ===============================
+        // MODEL
+        // ===============================
+        const Model = {
+            names: ["Pär", "Alexander", "Ullis", "Hans"],
+
+            getRandomName() {
+                return this.names[Math.floor(Math.random() * this.names.length)];
+            }
+        };
+
+        // ===============================
+        // VIEW
+        // vet inget om controllern eller modellen
+        // ===============================
+        const View = {
+            init() {
+                //var ska vi lägg handlebar templaten med data? I diven
+                this.divResult = document.getElementById("divResult");
+                //hämta template källan  som innehåller html and handlebars  {{ name }} 
+                this.templateSource = document.getElementById("h3-template").innerHTML;
+                //gör det till en funktion
+                this.template = Handlebars.compile(this.templateSource);
+                //skapar klickhändelse för knappen
+                document.getElementById("btnShowName").addEventListener("click", () => {
+                    // skapar och skickar ett customevent "nameShowed" som någon, i vårt fall, 
+                    // kontrollern lyssnar på och gör nått lämpligt med. Tex hämtar data från modellen 
+                    // och skicka det till vyn för rendering                    
+                    document.dispatchEvent(new CustomEvent("nameShowed"));
+                });
+            },
+
+            render(name) {
+                //anropa template funktionen för att fylla templaten med namn data
+                const html = this.template({ name });
+                //lägg handlebar templaten i diven
+                this.divResult.innerHTML = html;
+
+            },
+
+
+        };
+
+        // ===============================
+        // CONTROLLER
+        // känner till vyn och modellen
+        // ===============================
+        const Controller = {
+            init() {
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                //lyssnar på det av vyn skapade customevent, nameShowed
+                //och hanter det på lämpligt sätt genom att:
+                document.addEventListener("nameShowed", () => {
+                    //hämta slumpat namn från modellen
+                    const name = Model.getRandomName();
+                    //Skickar namn datat till vyn som kan render det i en handlebar template
+                    View.render(name);
+                });
+            }
+
+        };
+
+        // ===============================
+        // STARTA APPEN
+        // ===============================
+
+        // === STARTA APPEN ===
+
+        const App = {
+            main() {
+                View.init();
+                Controller.init();
+            }
+        }
+        App.main();
+    </script>
+</body>
+
+</html>

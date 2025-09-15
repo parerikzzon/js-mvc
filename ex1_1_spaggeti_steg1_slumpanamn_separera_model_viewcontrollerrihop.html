@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Steg 1 MVC - Model; Vy och kontroler ihop</title>
+</head>
+
+<body>
+    <h1>Steg 1 mot MVC Serpar ut i en Model: Vy och kontroller ihop</h1>
+    <button id="btnShowName">Visa slumpat namn</button>
+    <div id="result"></div>
+
+    <script>
+    // === MODEL ===
+    const Model = {
+        names: ["Pär", "Alexander", "Ullis", "Hans"],
+
+        getRandomName() {
+            return this.names[Math.floor(Math.random() * this.names.length)];
+        }
+    };
+
+    // === VIEW + CONTROLLER ihop ===
+    function showName() {
+        const name = Model.getRandomName(); // ← Nu hämtas namn från Model
+        document.getElementById("result").innerText = name;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("btnShowName").addEventListener("click", showName);
+    });
+    /*
+    Vad har vi uppnått?
+        Separat datalager (Model) – nu kan vi återanvända Model.getRandomName() i andra delar av appen.
+        Första steget mot MVC – vi har börjat dela upp ansvar.
+    */
+</script>
+
+
+</body>
+
+</html>

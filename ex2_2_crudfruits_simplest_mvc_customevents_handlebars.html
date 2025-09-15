@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Fruktlista MVC med Customevents och Handlebars</title>
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    li { margin-bottom: 5px; }
+    input[type="text"] { margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Fruktlista</h1>
+
+  <input type="text" id="newFruitInput" placeholder="Ny frukt">
+  <button id="addFruitBtn">Lägg till</button>
+
+  <ul id="dataList"></ul>
+
+  <!-- Handlebars-template -->
+  <script id="list-template" type="text/x-handlebars-template">
+    {{#each items}}
+    <!--i li sätt detta attribute så vi kan hämta in det för att kunna updatera det via en prompt-->
+      <li data-name="{{this}}">
+        {{this}}
+        <!--vilket frukts index vill vi uppdatera-->
+        <button class="updateBtn" data-index="{{@index}}">Uppdatera</button>
+        <button class="deleteBtn" data-index="{{@index}}">Ta bort</button>
+      </li>
+    {{/each}}
+  </script>
+
+  <script>
+    // === MODELL ===
+    const Model = {
+      data: ["Äpple", "Banan", "Citron"],
+      getData() {
+        return this.data;
+      },
+      addItem(item) {
+        this.data.push(item);
+      },
+      updateItem(index, newValue) {
+        if (this.data[index] !== undefined && newValue) {
+          this.data[index] = newValue;
+        }
+      },
+      deleteItem(index) {
+        this.data.splice(index, 1);
+      }
+    };
+
+    // === VY ===
+    const View = {
+      init() {
+        this.list = document.getElementById("dataList");
+        this.input = document.getElementById("newFruitInput");
+        this.addBtn = document.getElementById("addFruitBtn");
+        this.template = Handlebars.compile(document.getElementById("list-template").innerHTML);
+        
+        this.initEvents();
+        
+      },
+      initEvents(){
+        this.addBtn.addEventListener("click", () => {
+          const value = this.input.value.trim();
+          if (value) {
+            document.dispatchEvent(new CustomEvent("itemAdded", { detail: value }));
+            this.input.value = "";
+          }
+        });
+        //Lyssnar på klickhändelser på hela listan (<ul>).
+        //Detta kallas event delegation, lyssnar på listan istället för varje knapp.
+        this.list.addEventListener("click", (e) => {
+          //Hämtar data-index från det element som klickades (t.ex. en knapp).
+          const index = parseInt(e.target.dataset.index);
+          //Hittar det närmaste <li>-elementet som omger knappen som klickades.
+          //Det är där fruktnamnet finns sparat som data-name.
+          const li = e.target.closest("li");
+          //Kollar om det var en "Ta bort"-knapp som klickades.
+          if (e.target.classList.contains("deleteBtn")) {
+            //Skickar ett CustomEvent "deleteItem" med data objekt. dvs {detail:index} så att controller 
+            // kan hämta ut detta objekt för ta bort frukten på det här indexet.
+            //Kontrollern lyssnar på detta event och tar bort frukt på detta index med hjälp av modellen.
+            document.dispatchEvent(new CustomEvent("itemDeleted", { detail: index }));
+          }
+
+          if (e.target.classList.contains("updateBtn")) {
+            //Hämtar det nuvarande fruktnamnet från data-name i <li>-elementet.
+            //Detta används som förifyllt värde i prompten.
+            const currentName = li.dataset.name;
+            //fyller prompten med det fruktnamn som kan/ska uppdateras
+            const newName = prompt("Uppdatera fruktens namn:", currentName);
+            //Kollar att användaren faktiskt skrev något (inte tomt eller bara mellanslag).
+            if (newName && newName.trim() !== "") {
+              //Skickar ett CustomEvent "update" med data objekt. dvs {detail:index,value:newName} så att controller 
+            // kan hämta ut detta objekt för att uppdatera frukten på det här indexet.
+            //Kontrollern lyssnar på detta event och updpaterar frukt på detta index med nytt frukt data med hjälp av modellen.
+              document.dispatchEvent(new CustomEvent("itemUpdated", {
+                detail: { index, value: newName.trim() }
+              }));
+            }
+          }
+        });
+
+      },
+      render(items) {
+        this.list.innerHTML = this.template({ items });
+      }
+    };
+
+    // === KONTROLLER ===
+    const Controller = {
+      init() {       
+        View.render(Model.getData());
+        this.initEvents();
+        
+      },
+      initEvents(){
+        //sätter upp lyysnre på de cusotmevnets som gnerar från vyn.
+        document.addEventListener("itemAdded", (e) => {
+          Model.addItem(e.detail);
+          View.render(Model.getData());
+        });
+
+        document.addEventListener("itemDeleted", (e) => {
+          Model.deleteItem(e.detail);
+          View.render(Model.getData());
+        });
+
+        document.addEventListener("itemUpdated", (e) => {
+          const { index, value } = e.detail;
+          Model.updateItem(index, value);
+          View.render(Model.getData());
+        });
+
+      }
+    };
+
+    // === STARTA APPEN ===
+    
+const App={
+  main(){
+    View.init();
+    Controller.init();
+  }
+}
+App.main();
+
+  </script>
+</body>
+</html>

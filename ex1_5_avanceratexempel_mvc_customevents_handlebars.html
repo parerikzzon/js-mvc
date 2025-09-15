@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MVC med Custom Events Handlebars</title>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+</head>
+
+<body>
+    <h1>Steg 4 MVC, customevent och handlebars.sj {{}}</h1>
+    <button id="btnShowNames">Visa slumpat namn</button>
+    <div id="divResult">
+        <!--här kommer handlebartemplate att hamna med i fyllt data-->
+    </div>
+    
+<!-- Handlebars-template för lista -->
+    <script id="names-template" type="text/x-handlebars-template">
+        <ul>
+            {{#each names}}
+                <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </script>
+
+
+    <script>
+        
+// === MODEL ===
+        const Model = {
+            names: ["Pär", "Alexander", "Ullis", "Hans", "Maria", "Eva", "Jonas", "Karin"],
+
+            getRandomNames(count = 3) {
+                const shuffled = [...this.names].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            }
+        };
+
+        // === VIEW ===
+        const View = {
+            render(names) {
+                const source = document.getElementById("names-template").innerHTML;
+                const template = Handlebars.compile(source);
+                const html = template({ names });
+                document.getElementById("divResult").innerHTML = html;
+            },
+
+            init() {
+                document.getElementById("btnShowNames").addEventListener("click", () => {
+                    document.dispatchEvent(new CustomEvent("namesRequested"));
+                });
+            }
+        };
+
+        // === CONTROLLER ===
+        const Controller = {
+            init() {
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                document.addEventListener("namesRequested", () => {
+                    const names = Model.getRandomNames(3);
+                    View.render(names);
+                });
+            }
+        };
+
+        // === APP ===
+        const App = {
+            main() {
+                View.init();
+                Controller.init();
+            }
+        };
+
+        window.addEventListener("DOMContentLoaded", () => {
+            App.main();
+        });
+
+        
+    </script>
+</body>
+
+</html>

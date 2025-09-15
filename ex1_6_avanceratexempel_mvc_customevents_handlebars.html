@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Avancerad MVC + Handlebars</title>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+    <style>
+        body { font-family: sans-serif; }
+        ul { list-style: none; padding: 0; }
+        li { cursor: pointer; padding: 5px; }
+        li:hover { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Slumpa namn</h1>
+
+    <label for="countSelect">Antal namn:</label>
+    <select id="countSelect">
+        <option value="1">1</option>
+        <option value="3" selected>3</option>
+        <option value="5">5</option>
+    </select>
+
+    <button id="btnShowNames">Visa namn</button>
+
+    <div id="result"></div>
+
+    <!-- Template: Lista -->
+    <script id="names-template" type="text/x-handlebars-template">
+        <ul>
+            {{#each names}}
+                <li data-name="{{this}}">{{this}}</li>
+            {{/each}}
+        </ul>
+    </script>
+
+    <!-- Template: Detaljvy -->
+    <script id="detail-template" type="text/x-handlebars-template">
+        <p>Du klickade på: <strong>{{name}}</strong></p>
+    </script>
+
+    <script>
+        // === MODEL ===
+        const Model = {
+            names: ["Pär", "Alexander", "Ullis", "Hans", "Maria", "Eva", "Jonas", "Karin"],
+
+            getRandomNames(count) {
+                const shuffled = [...this.names].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            }
+        };
+
+        // === VIEW ===
+        const View = {
+            renderList(names) {
+                const source = document.getElementById("names-template").innerHTML;
+                const template = Handlebars.compile(source);
+                const html = template({ names });
+                document.getElementById("result").innerHTML = html;
+
+                // Lägg till klickhändelser på varje namn
+                document.querySelectorAll("#result li").forEach(li => {
+                    li.addEventListener("click", () => {
+                        const name = li.dataset.name;
+                        document.dispatchEvent(new CustomEvent("nameSelected", { detail: { name } }));
+                    });
+                });
+            },
+
+            renderDetail(name) {
+                const source = document.getElementById("detail-template").innerHTML;
+                const template = Handlebars.compile(source);
+                const html = template({ name });
+                document.getElementById("result").innerHTML = html;
+            },
+
+            init() {
+                document.getElementById("btnShowNames").addEventListener("click", () => {
+                    const count = parseInt(document.getElementById("countSelect").value, 10);
+                    document.dispatchEvent(new CustomEvent("namesRequested", { detail: { count } }));
+                });
+            }
+        };
+
+        // === CONTROLLER ===
+        const Controller = {
+            init() {
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                document.addEventListener("namesRequested", (e) => {
+                    const count = e.detail.count;
+                    const names = Model.getRandomNames(count);
+                    View.renderList(names);
+                });
+
+                document.addEventListener("nameSelected", (e) => {
+                    const name = e.detail.name;
+                    View.renderDetail(name);
+                });
+            }
+        };
+
+        // === APP ===
+        const App = {
+            main() {
+                View.init();
+                Controller.init();
+            }
+        };
+
+        window.addEventListener("DOMContentLoaded", () => {
+            App.main();
+        });
+    </script>
+</body>
+</html>

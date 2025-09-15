@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MVC uppdelat i tre objekt</title>
+</head>
+
+<body>
+    <h1>Steg 2 Dela upp i tre objekt Modell View och Controller</h1>
+    <button id="btnShowName">Visa slumpat namn</button>
+    <div id="result"></div>
+
+    <script>
+    // === MODEL ===
+    const Model = {
+        names: ["Pär", "Alexander", "Ullis", "Hans"],
+
+        getRandomName() {
+            return this.names[Math.floor(Math.random() * this.names.length)];
+        }
+    };
+
+    // === VIEW ===
+    const View = {
+        render(name) {
+            document.getElementById("result").innerText = name;
+        },
+
+        init(controllCallbackMethod) {
+            //skapar en klickhändelse som anropar indirekt en controller metod.
+            //Den heter handleshowName i controllern men det vet inte vyn.
+            document.getElementById("btnShowName").addEventListener("click", controllCallbackMethod);
+        }
+    };
+
+    // === CONTROLLER ===
+    const Controller = {
+        init() {
+            //sätter callback metoden eg then methd i cllar som vyn ska kalla på
+            View.init(this.handleShowName);
+        },
+
+        handleShowName() {
+            const name = Model.getRandomName();
+            View.render(name);
+        }
+    };
+
+    // === STARTA APPEN ===
+    window.addEventListener("DOMContentLoaded", () => {
+        Controller.init();
+    });
+</script>
+<!--
+Vad har vi gjort i detta steg?
+Uppdelning  Ansvar
+Model	    Hanterar data och logik för att hämta ett slumpmässigt namn.
+View	    Hanterar DOM-manipulation och eventbindning.
+Controller	Kopplar ihop View och Model, och hanterar den logiken.
+-->
+
+
+</body>
+
+</html>
